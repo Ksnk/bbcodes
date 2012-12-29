@@ -24,6 +24,34 @@ BBкод - "упрощенная"  разметка, позволяющая оп
 - `[url]rambler.ru[/url]` преобразуетсся в `<a href="http://rambler.ru">rambler.ru</a>`
 - `[url=yandex.ru]rambler.ru[/url]` преобразуетсся в `<a href="http://yandex.ru">rambler.ru</a>`, так же как и `[url yandex.ru]rambler.ru[/url]`
 
+### `align`. `p`
+Тег начала параграфа. Необязателен закрывающий парный тег. Закрывающий тег автоматически вставляется, если встретится еще один тег `p`, или в конце теста.
+атрибуты
+
+ - align - выравнивание текста.
+    - right - выравнивание по правомку краю
+    - left - по левому
+    - center - по центру
+    - ustify - по ширине.
+
+- `[p center]aaa[/p] xxx[p] yyy [p] zzz` преобразуетсся в `<p align="center"> aaa</p> xxx<p> yyy</p><p> zzz </p>`
+
+### `center`.
+
+синоним `[p align=center]
+
+### `justify`.
+
+синоним `[p align=justify]
+
+### `left`.
+
+синоним `[p align=left]
+
+### `right`.
+
+синоним `[p align=right]
+
 ### `img`.
 Требуется парный закрывающий тег. Атрибуты src, width, height
 
