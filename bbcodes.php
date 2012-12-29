@@ -16,13 +16,20 @@ class bb
     /** string @var - при возврате из parse_tag - параметры закрывающего тега */
     private $breakTags = array('*');
 
+    /**
+     * Описатель тегов-синонимов.
+     * - ключ массива - синоним.
+     * - первый элемент массива - базовый тег
+     * - второй параметр - массив дополнительных параметров для конкретизации синонима
+     * @var array
+     */
     private $synonyms = array(
         'a' => array('url', array()), // просто синоним без дополнительных параметров
         'p' => array('align', array()), //
-        'center' => array('align', array('align' => 'center')), // сисноним с параметрами
-        'justify' => array('align', array('align' => 'justify')), // сисноним с параметрами
-        'left' => array('align', array('align' => 'left')), // сисноним с параметрами
-        'right' => array('align', array('align' => 'right')), // сисноним с параметрами
+        'center' => array('align', array('align' => 'center')), // синоним с параметрами
+        'justify' => array('align', array('align' => 'justify')), // синоним с параметрами
+        'left' => array('align', array('align' => 'left')), // синоним с параметрами
+        'right' => array('align', array('align' => 'right')), // синоним с параметрами
     );
 
     /**
@@ -43,7 +50,13 @@ class bb
     }
 
 //-------------------------------------------------------------------------
-    private function error($msg, $start = 0)
+    /**
+     * выдать информацию об ошибке парсинга.
+     * В нормальной жизни - не нужно ничего выводить. Парсинг должен выводить результат всегда.
+     * @param $msg
+     * @param int $start
+     */
+    protected function error($msg, $start = 0)
     {
         echo $msg;
     }
@@ -53,7 +66,7 @@ class bb
      * @param $text
      * @return string
      */
-    private function unslash($text)
+    protected function unslash($text)
     {
         return strtr($text, array(
             //"\r\n" => "\n",
@@ -196,6 +209,7 @@ class bb
 
     /*******************************************************************************
      * парсинг конкретных тегов
+     * функция parse_tag_XXX - полный генератор смысла тега.
      */
     /**
      * Парсинг тега b
@@ -226,7 +240,7 @@ class bb
     }
 
     /**
-     * Парсинг тега hr
+     * Парсинг тега hr  - неописанны и неиспользуемый тег. Зачем он нужен - уа не приложу.
      * @param $text
      * @param $start
      * @param $par
@@ -391,6 +405,8 @@ class bb
 }
 
 /**
+ * натыренные по интернетам хочушки и тудушки.  Частично уже нехочушки.
+ *
  * тег [a] - синоним [url]
 [a]адрес_ссылки[/a]
 [a target=_blank]www.idealcountry.org.ua[/a]
