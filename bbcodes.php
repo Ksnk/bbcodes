@@ -4,7 +4,7 @@
  * $Id: рекурсивный спуск для bb кодов.
  * ver: v0.2,
  * status : draft build.
- * GIT: origin	https://github.com/Ksnk/bbcodes (push)$
+ * GIT: origin    https://github.com/Ksnk/bbcodes (push)$
  * -----------------------------------------------------------------
  * License MIT - Serge Koriakin -  2012, sergekoriakin@gmail.com
  * -----------------------------------------------------------------
@@ -14,29 +14,42 @@ class bb
     /** string @var - при возврате из parse_tag - имя закрывающего тега */
     private $closedTag;
 
-    /** string @var - при анализе синонимов - оригинальный тег */
+    /** array @var - стек открытых тегов, для автоматического закрытия необзательных */
     private $openTag;
 
     /** string @var - при возврате из parse_tag - параметры закрывающего тега */
-    private $closedTagArgs;
+    protected $closedTagArgs;
 
-    /** string @var - при возврате из parse_tag - параметры закрывающего тега */
-    private $breakTags = array('*');
+    /** string @var - Теги, на которых прерывается парсинг внутренности тега */
+    protected $breakTags = array('*');
 
     /**
-     * Описатель тегов-синонимов.
-     * - ключ массива - синоним.
-     * - первый элемент массива - базовый тег
-     * - второй параметр - массив дополнительных параметров для конкретизации синонима
+     * Описатель тегов.
+     * - ключ массива - имя тега.
+     * - первый элемент массива - базовый тег, суффикс имени функции парсинга
+     * - остальные параметры - дополнительные для конкретизации синонима
+     * -[_break] - комплект `break` тегов для процедуры парсинга. для сложных тегив типа list
      * @var array
      */
-    private $synonyms = array(
-        'a' => array('url', array()), // просто синоним без дополнительных параметров
-        'p' => array('align', array()), //
-        'center' => array('align', array('align' => 'center')), // синоним с параметрами
-        'justify' => array('align', array('align' => 'justify')), // синоним с параметрами
-        'left' => array('align', array('align' => 'left')), // синоним с параметрами
-        'right' => array('align', array('align' => 'right')), // синоним с параметрами
+    protected $tags = array(
+        'img' => 'img',
+        'nobb' => 'nobb',
+        'hr' => 'hr',
+
+        'b' => array('b', 'html' => 'strong'),
+        'u' => array('b', 'html' => 'span', '_html' => 'style="text-decoration:underline;"'),
+        'i' => array('b', 'html' => 'em'),
+
+        'url' => 'url',
+        'a' => 'url',
+        'list' => array('list', '_break' => '*'), //
+
+        'align' => 'align', //
+        'p' => 'align', //
+        'center' => array('align', 'align' => 'center'),
+        'justify' => array('align', 'align' => 'justify'),
+        'left' => array('align', 'align' => 'left'),
+        'right' => array('align', 'align' => 'right'),
     );
 
     /**
@@ -170,11 +183,16 @@ class bb
                 $start += strlen($m[0]);
                 $m[3] = strtolower($m[3]);
                 $data = array();
-                if (array_key_exists($m[3], $this->synonyms)) {
-                    $data = $this->synonyms[$m[3]][1];
-                    $method = 'parse_tag_' . $this->synonyms[$m[3]][0];
+                $method = '';
+                if (array_key_exists($m[3], $this->tags)) {
+                    $x = &$this->tags[$m[3]];
+                    if (is_array($x))
+                        $data = $x;
+                    else
+                        $data = array($x);
+                    $method = 'parse_tag_' . $data[0];
                 } else
-                    $method = 'parse_tag_' . $m[3];
+                    $this->error('undefined tag ' . $m[3]);
                 if (method_exists($this, $method)) {
                     if (!empty($m[2])) {
                         // is it closed?
@@ -218,48 +236,69 @@ class bb
         return $parsed;
     }
 
+    /**
+     * открывающий html тег, в зависимости от параметров
+     * @param $par
+     * @return string
+     */
+    function html_openTag(&$par,$tag)
+    {
+        return '<' . $this->_($par['html'], $tag) . $this->_($par['_html'], ' %s') . '>';
+    }
+
+    /**
+     * одиночный тег.Для xhtml нужно вставить финишную /
+     * @param $par
+     * @return string
+     */
+    function html_singleTag(&$par,$tag)
+    {
+        return '<' . $this->_($par['html'], $tag) . $this->_($par['_html'], ' %s') . '>';
+    }
+
+    /**
+     * закрывающий тег.
+     * @param $par
+     * @return string
+     */
+    function html_closeTag(&$par,$tag)
+    {
+        return '</' . $this->_($par['html'], $tag) . '>';
+    }
+
     /*******************************************************************************
      * парсинг конкретных тегов
      * функция parse_tag_XXX - полный генератор смысла тега.
      */
     /**
-     * Парсинг тега b
+     * Парсинг простых тегов, типа B, U, I и так далее
      * @param $text
      * @param $start
      * @param $par
+     * @param $tag
      * @return mixed|null
      */
-    private function parse_tag_b(&$text, &$start, $par)
+    private function parse_tag_b(&$text, &$start, $par, $tag)
     {
-        $parsed = '<b>' . $this->parse_tags($text, $start) . '</b>';
-        if ($this->closedTag != 'b') $this->error('tag B not closed', $start);
+        $parsed = $this->html_openTag($par,$tag)
+            . $this->parse_tags($text, $start)
+            . $this->html_closeTag($par,$tag);
+        if ($this->closedTag != $tag)
+            $this->error('tag [' . $tag . '] not closed', $start);
         return $parsed;
     }
 
     /**
-     * Парсинг тега b
+     * Парсинг одиночного тега hr  - неописанны и неиспользуемый тег. Зачем он нужен - уа не приложу.
      * @param $text
      * @param $start
      * @param $par
+     * @param $tag
      * @return mixed|null
      */
-    private function parse_tag_u(&$text, &$start, $par)
+    private function parse_tag_hr(&$text, &$start, $par,$tag)
     {
-        $parsed = '<u>' . $this->parse_tags($text, $start) . '</u>';
-        if ($this->closedTag != 'u') $this->error('tag U not closed', $start);
-        return $parsed;
-    }
-
-    /**
-     * Парсинг тега hr  - неописанны и неиспользуемый тег. Зачем он нужен - уа не приложу.
-     * @param $text
-     * @param $start
-     * @param $par
-     * @return mixed|null
-     */
-    private function parse_tag_hr(&$text, &$start, $par)
-    {
-        return '<hr>';
+        return $this->html_singleTag($par,$tag);
     }
 
     /**
@@ -410,9 +449,7 @@ class bb
         return '<' . $list
             . $this->_($data['type'], ' type="%s"')
             . '>' . implode("\n", $li) . '</' . $list . '>';
-
     }
-
 }
 
 /**
