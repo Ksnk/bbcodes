@@ -241,9 +241,10 @@ class bb
      * @param $par
      * @return string
      */
-    function html_openTag(&$par,$tag)
+    function html_openTag($par,$tag)
     {
-        return '<' . $this->_($par['html'], $tag) . $this->_($par['_html'], ' %s') . '>';
+        //echo 'xxx:';var_dump($par);print_r($tag);
+        return '<' . $this->_($par['html'],'%s', $tag) . $this->_($par['_html'], ' %s') . '>';
     }
 
     /**
@@ -251,9 +252,9 @@ class bb
      * @param $par
      * @return string
      */
-    function html_singleTag(&$par,$tag)
+    function html_singleTag($par,$tag)
     {
-        return '<' . $this->_($par['html'], $tag) . $this->_($par['_html'], ' %s') . '>';
+        return '<' . $this->_($par['html'],'%s', $tag) . $this->_($par['_html'], ' %s') . '>';
     }
 
     /**
@@ -261,9 +262,9 @@ class bb
      * @param $par
      * @return string
      */
-    function html_closeTag(&$par,$tag)
+    function html_closeTag($par,$tag)
     {
-        return '</' . $this->_($par['html'], $tag) . '>';
+        return '</' . $this->_($par['html'],'%s', $tag) . '>';
     }
 
     /*******************************************************************************
@@ -278,11 +279,11 @@ class bb
      * @param $tag
      * @return mixed|null
      */
-    private function parse_tag_b(&$text, &$start, $par, $tag)
+    private function parse_tag_b(&$text, &$start, $par, $tag,$data)
     {
-        $parsed = $this->html_openTag($par,$tag)
+        $parsed = $this->html_openTag($data,$tag)
             . $this->parse_tags($text, $start)
-            . $this->html_closeTag($par,$tag);
+            . $this->html_closeTag($data,$tag);
         if ($this->closedTag != $tag)
             $this->error('tag [' . $tag . '] not closed', $start);
         return $parsed;
@@ -296,9 +297,9 @@ class bb
      * @param $tag
      * @return mixed|null
      */
-    private function parse_tag_hr(&$text, &$start, $par,$tag)
+    private function parse_tag_hr(&$text, &$start, $par,$tag,$data)
     {
-        return $this->html_singleTag($par,$tag);
+        return $this->html_singleTag($data,$tag);
     }
 
     /**

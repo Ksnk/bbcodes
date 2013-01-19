@@ -57,6 +57,16 @@ class bb_baseTest extends PHPUnit_Framework_TestCase
          <img src="Гугель" title="Hello"> - вот гугель', $bb->parse($text));
     }
 
+    function test_b()
+    {
+        $bb=$this->get_bb();
+        $text = "[i][b]rambler.ru[/b] а вот - Рамблер
+         [u Hello]Гугель[/u] - вот гугель[/i]
+";
+        $this->assertEquals('<em><strong>rambler.ru</strong> а вот - Рамблер
+         <span style="text-decoration:underline;">Гугель</span> - вот гугель</em>', $bb->parse($text));
+    }
+
     /*   function test_url()
 {
     $bb=$this->get_bb();
