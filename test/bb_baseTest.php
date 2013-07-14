@@ -1,6 +1,7 @@
 <?php
 
-if (!defined('PHPUnit_MAIN_METHOD')) {
+if (!function_exists('phpunit_autoload')) {
+    $GLOBALS['runit']=true;
     ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . dirname(dirname(__FILE__)));
     require 'PHPUnit/Autoload.php';
 }

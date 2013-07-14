@@ -12,7 +12,7 @@
 class bb
 {
     /** string @var - при возврате из parse_tag - имя закрывающего тега */
-    private $closedTag;
+    protected $closedTag;
 
     /** array @var - стек открытых тегов, для автоматического закрытия необзательных */
     private $openTag;
@@ -135,7 +135,7 @@ class bb
      * ->param('="ramb\"ler . ru" www=12345', array(0 => 'url',
      *         'target' => 'target', 'url' => 'url', 'www' => 'www'))
      */
-    private function param($par, $synonims)
+    protected function param($par, $synonims)
     {
         $start = 0;
         $result = array();
@@ -170,7 +170,7 @@ class bb
      * @param $start
      * @return string
      */
-    private function parse_tags(&$text, &$start)
+    protected function parse_tags(&$text, &$start)
     {
         $parsed = '';
         while (true) {
@@ -472,7 +472,7 @@ class bb
  *
  * [align=right] ...[/align] [center] === [align=center]  [left] [right]  [justify]
  *
- * [bbcode] юютекст не транслируется иикодом [/bbcode]
+ * [bbcode] юютекст не транслируется bbкодом [/bbcode]
  *
  * [code] - текст для програмных вставок
  *
